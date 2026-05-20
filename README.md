@@ -1,53 +1,73 @@
-# JobTrackr - Frontend
+# JobTrackr — Frontend
 
-##  Description
+Application web SaaS de gestion de candidatures. Ce dépôt contient le **frontend** (React, Tailwind CSS) : interface moderne, intuitive et responsive pour suivre vos candidatures d’emploi.
 
-JobTrackr est une application web SaaS de gestion de candidatures.  
-Ce repository contient le **frontend** développé avec React.js et TailwindCSS.
+## Stack technique
 
-L’objectif est d’offrir une interface moderne, intuitive et responsive permettant aux utilisateurs de suivre leurs candidatures d’emploi.
-
-
-##  Stack technique
-
-- React.js
-- TailwindCSS
-- Axios
-- React Router
+- React 19 + TypeScript
 - Vite
+- Tailwind CSS v4
+- React Router
+- Lucide React
+- Framer Motion
+- Sonner (toasts)
 
+## Fonctionnalités
 
-##  Fonctionnalités
-
-- Authentification utilisateur (login / register)
-- Dashboard avec statistiques
-- Gestion des candidatures (CRUD)
+- Authentification (login / register) — session simulée en local
+- Dashboard avec statistiques et graphiques
+- Gestion des candidatures (liste, détail, ajout / édition)
 - Filtrage et recherche
-- Interface responsive (mobile / desktop)
-- Notifications et feedback UI
-- Connexion API backend
+- Paramètres utilisateur (profil, thème clair / sombre)
+- Interface responsive (mobile / tablette / desktop)
+- Notifications toast
+- Prêt pour connexion API backend
 
-
-##  Pages principales
+## Pages principales
 
 - Login / Register
 - Dashboard
-- Liste des candidatures
-- Détails candidature
-- Paramètres utilisateur
+- Candidatures (liste + détail)
+- Statistiques
+- Paramètres
 
+## API Backend
 
-##  API Backend
-
-Le frontend consomme une API REST disponible ici :
+Le frontend pourra consommer l’API REST :
 
 https://jobtrackr-api.onrender.com
-
 
 ## Installation locale
 
 ```bash
-git clone https://github.com/TON_USERNAME/jobtrackr-client.git
+git clone https://github.com/nyeja/jobtrackr-client.git
 cd jobtrackr-client
 npm install
 npm run dev
+```
+
+Ouvrez [http://localhost:5173](http://localhost:5173).
+
+**Connexion démo** : email valide + mot de passe (6 caractères minimum).
+
+## Structure du projet
+
+```
+src/
+├── components/
+├── pages/
+├── layouts/
+├── routes/
+├── hooks/
+├── services/
+├── context/
+└── utils/
+```
+
+## Scripts
+
+| Commande          | Description          |
+|-------------------|----------------------|
+| `npm run dev`     | Serveur de développement |
+| `npm run build`   | Build production     |
+| `npm run preview` | Prévisualisation     |
