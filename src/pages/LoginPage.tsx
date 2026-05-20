@@ -1,15 +1,18 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
+import { PasswordInput } from '@/components/PasswordInput'
 import { useAuth } from '@/context/AuthContext'
+import { getApiErrorMessage } from '@/lib/api'
 
 export function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [loading, setLoading] = useState(false)
 
@@ -27,11 +30,15 @@ export function LoginPage() {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 600))
-    login(email, password)
-    toast.success('Connexion réussie')
-    navigate('/dashboard')
-    setLoading(false)
+    try {
+      await login(email.trim(), password, rememberMe)
+      toast.success('Connexion réussie')
+      navigate('/dashboard')
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Connexion impossible'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -63,15 +70,23 @@ export function LoginPage() {
           error={errors.email}
           placeholder="vous@exemple.com"
         />
-        <Input
+        <PasswordInput
           label="Mot de passe"
-          type="password"
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
           placeholder="••••••••"
         />
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="size-4 rounded border-zinc-300 text-violet-600 focus:ring-violet-500/30"
+          />
+          Rester connecté sur cet appareil
+        </label>
         <Button type="submit" className="w-full" size="lg" loading={loading}>
           Se connecter
         </Button>

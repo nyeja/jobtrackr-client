@@ -2,79 +2,112 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from 'react'
+import { setUnauthorizedHandler } from '@/lib/api'
+import { getAccessToken, clearAccessToken, clearLegacyStorage } from '@/lib/tokenStorage'
+import { isTokenExpired } from '@/lib/jwt'
+import * as authService from '@/services/authService'
 import type { User } from '@/types/user'
 
 interface AuthContextValue {
   user: User | null
-  login: (email: string, password: string) => void
-  register: (name: string, email: string, password: string) => void
-  logout: () => void
+  isLoading: boolean
+  isAuthenticated: boolean
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<void>
+  register: (name: string, email: string, password: string, rememberMe?: boolean) => Promise<void>
+  logout: () => Promise<void>
+  refreshUser: () => Promise<void>
 }
+
+export { getApiErrorMessage } from '@/lib/api'
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-const STORAGE_KEY = 'jobtrackr_user'
-
-function loadStoredUser(): User | null {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    return JSON.parse(raw) as User
-  } catch {
-    return null
-  }
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => loadStoredUser())
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const persist = useCallback((next: User | null) => {
-    if (next) localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    else localStorage.removeItem(STORAGE_KEY)
-    setUser(next)
+  const clearSession = useCallback(() => {
+    clearAccessToken()
+    clearLegacyStorage()
+    setUser(null)
   }, [])
 
+  useEffect(() => {
+    setUnauthorizedHandler(() => clearSession())
+    const onLogout = () => clearSession()
+    window.addEventListener('jobtrackr:logout', onLogout)
+    return () => window.removeEventListener('jobtrackr:logout', onLogout)
+  }, [clearSession])
+
+  useEffect(() => {
+    let cancelled = false
+    async function restore() {
+      const token = getAccessToken()
+      if (!token || isTokenExpired(token)) {
+        clearSession()
+        if (!cancelled) setIsLoading(false)
+        return
+      }
+      try {
+        const me = await authService.fetchMe()
+        if (!cancelled) setUser(me)
+      } catch {
+        if (!cancelled) clearSession()
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+    void restore()
+    return () => {
+      cancelled = true
+    }
+  }, [clearSession])
+
   const login = useCallback(
-    (email: string, _password: string) => {
-      void _password
-      const name = email.split('@')[0]?.replace(/\./g, ' ') ?? 'Utilisateur'
-      persist({
-        id: crypto.randomUUID(),
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        email,
-      })
+    async (email: string, password: string, rememberMe = false) => {
+      const { user: u } = await authService.loginRequest(email, password, rememberMe)
+      setUser(u)
     },
-    [persist],
+    [],
   )
 
   const register = useCallback(
-    (name: string, email: string, _password: string) => {
-      void _password
-      persist({
-        id: crypto.randomUUID(),
-        name,
-        email,
-      })
+    async (name: string, email: string, password: string, rememberMe = false) => {
+      const { user: u } = await authService.registerRequest(name, email, password, rememberMe)
+      setUser(u)
     },
-    [persist],
+    [],
   )
 
-  const logout = useCallback(() => {
-    persist(null)
-  }, [persist])
+  const logout = useCallback(async () => {
+    try {
+      if (getAccessToken()) await authService.logoutRequest()
+    } finally {
+      clearSession()
+    }
+  }, [clearSession])
+
+  const refreshUser = useCallback(async () => {
+    const me = await authService.fetchMe()
+    setUser(me)
+  }, [])
 
   const value = useMemo(
     () => ({
       user,
+      isLoading,
+      isAuthenticated: Boolean(user),
       login,
       register,
       logout,
+      refreshUser,
     }),
-    [user, login, register, logout],
+    [user, isLoading, login, register, logout, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

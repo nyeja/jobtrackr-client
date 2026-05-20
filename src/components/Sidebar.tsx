@@ -67,7 +67,7 @@ export function Sidebar({
         </nav>
         <div className="border-t border-zinc-100 p-4 dark:border-zinc-800">
           <p className="text-[11px] leading-relaxed text-zinc-400 dark:text-zinc-500">
-            JobTrackr est une démo frontend — données simulées localement.
+            Données sécurisées — synchronisées avec MongoDB Atlas.
           </p>
         </div>
       </aside>

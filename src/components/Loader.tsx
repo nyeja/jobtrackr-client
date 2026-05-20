@@ -1,5 +1,9 @@
 import { cn } from '@/utils/cn'
 
+export function PageLoader(props: { className?: string; label?: string }) {
+  return <Loader {...props} />
+}
+
 export function Loader({ className, label = 'Chargement' }: { className?: string; label?: string }) {
   return (
     <div className={cn('flex flex-col items-center justify-center gap-3 py-12', className)}>

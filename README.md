@@ -42,13 +42,20 @@ https://jobtrackr-api.onrender.com
 ```bash
 git clone https://github.com/nyeja/jobtrackr-client.git
 cd jobtrackr-client
+cp .env.example .env
 npm install
 npm run dev
 ```
 
 Ouvrez [http://localhost:5173](http://localhost:5173).
 
-**Connexion démo** : email valide + mot de passe (6 caractères minimum).
+Configurez `VITE_API_URL` (ex. `http://localhost:5000/api`) et démarrez l’API backend MongoDB.
+
+## Déploiement Vercel
+
+1. Importer le repo sur Vercel  
+2. Variable d’environnement : `VITE_API_URL=https://votre-api.onrender.com/api`  
+3. Sur Render, définir `CLIENT_URL` = URL Vercel (CORS + cookies refresh)
 
 ## Structure du projet
 

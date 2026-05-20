@@ -1,5 +1,7 @@
 import { Menu, LogOut } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/Button'
 import { useAuth } from '@/context/AuthContext'
 import { cn } from '@/utils/cn'
@@ -14,6 +16,13 @@ export function Navbar({
   onMenuClick: () => void
 }) {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await logout()
+    toast.success('Déconnexion réussie')
+    navigate('/login', { replace: true })
+  }
   const initials =
     user?.name
       .split(' ')
@@ -66,7 +75,7 @@ export function Navbar({
           variant="ghost"
           size="sm"
           className="hidden sm:inline-flex"
-          onClick={() => logout()}
+          onClick={() => void handleLogout()}
           aria-label="Se déconnecter"
         >
           <LogOut className="size-4" />
@@ -76,7 +85,7 @@ export function Navbar({
           variant="ghost"
           size="sm"
           className="sm:hidden"
-          onClick={() => logout()}
+          onClick={() => void handleLogout()}
           aria-label="Se déconnecter"
         >
           <LogOut className="size-4" />

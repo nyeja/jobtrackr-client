@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
+import { PasswordInput } from '@/components/PasswordInput'
 import { useAuth } from '@/context/AuthContext'
+import { getApiErrorMessage } from '@/lib/api'
 
 export function RegisterPage() {
   const { register } = useAuth()
@@ -12,6 +14,7 @@ export function RegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [rememberMe, setRememberMe] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
@@ -31,11 +34,15 @@ export function RegisterPage() {
     e.preventDefault()
     if (!validate()) return
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 700))
-    register(name, email, password)
-    toast.success('Compte créé avec succès')
-    navigate('/dashboard')
-    setLoading(false)
+    try {
+      await register(name.trim(), email.trim(), password, rememberMe)
+      toast.success('Compte créé avec succès')
+      navigate('/dashboard')
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, 'Inscription impossible'))
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -70,22 +77,31 @@ export function RegisterPage() {
           error={errors.email}
           placeholder="vous@exemple.com"
         />
-        <Input
+        <PasswordInput
           label="Mot de passe"
-          type="password"
+          autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
           placeholder="••••••••"
         />
-        <Input
+        <PasswordInput
           label="Confirmer le mot de passe"
-          type="password"
+          autoComplete="new-password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           error={errors.confirm}
           placeholder="••••••••"
         />
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="size-4 rounded border-zinc-300 text-violet-600 focus:ring-violet-500/30"
+          />
+          Rester connecté après inscription
+        </label>
         <Button type="submit" className="w-full" size="lg" loading={loading}>
           Créer mon compte
         </Button>

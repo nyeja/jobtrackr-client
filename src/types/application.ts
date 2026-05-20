@@ -1,26 +1,47 @@
+/** Aligné sur l’API MongoDB */
+
 export type ApplicationStatus =
-  | 'to_send'
-  | 'sent'
-  | 'interview'
-  | 'rejected'
-  | 'accepted'
+  | 'À envoyer'
+  | 'Envoyée'
+  | 'Entretien'
+  | 'Refusée'
+  | 'Acceptée'
 
-export type ContractType = 'cdi' | 'cdd' | 'freelance' | 'stage' | 'alternance'
+export type ContractType = 'CDI' | 'CDD' | 'Freelance' | 'Stage' | 'Alternance'
 
-export interface ApplicationHistoryEntry {
-  id: string
-  date: string
-  message: string
+export interface ApplicationApi {
+  _id: string
+  company: string
+  position: string
+  status: ApplicationStatus
+  contractType: ContractType
+  applicationDate: string
+  jobUrl?: string
+  notes?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
-export interface Application {
+export interface Application extends Omit<ApplicationApi, '_id'> {
   id: string
-  company: string
-  role: string
-  contractType: ContractType
-  appliedAt: string
-  offerUrl: string
-  status: ApplicationStatus
+  jobUrl: string
   notes: string
-  history: ApplicationHistoryEntry[]
+}
+
+export interface ApplicationStats {
+  total: number
+  interviews: number
+  accepted: number
+  rejected: number
+  byStatus: Record<string, number>
+}
+
+export interface ApplicationPayload {
+  company: string
+  position: string
+  status?: ApplicationStatus
+  contractType?: ContractType
+  applicationDate?: string
+  jobUrl?: string
+  notes?: string
 }

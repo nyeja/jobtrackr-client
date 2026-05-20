@@ -1,5 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { Toaster } from 'sonner'
+import { Toaster } from 'react-hot-toast'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import {
+  ProtectedRoute,
+  PublicOnlyRoute,
+  RootRedirect,
+} from '@/components/ProtectedRoute'
 import { ApplicationsProvider } from '@/context/ApplicationsContext'
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
@@ -12,13 +18,12 @@ import { ApplicationsPage } from '@/pages/ApplicationsPage'
 import { ApplicationDetailPage } from '@/pages/ApplicationDetailPage'
 import { StatisticsPage } from '@/pages/StatisticsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
-import { ProtectedRoute, PublicOnlyRoute, RootRedirect } from '@/routes/AppRoutes'
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ApplicationsProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AuthProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<RootRedirect />} />
@@ -31,7 +36,13 @@ export default function App() {
               </Route>
 
               <Route element={<ProtectedRoute />}>
-                <Route element={<DashboardLayout />}>
+                <Route
+                  element={
+                    <ApplicationsProvider>
+                      <DashboardLayout />
+                    </ApplicationsProvider>
+                  }
+                >
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/applications" element={<ApplicationsPage />} />
                   <Route path="/applications/:id" element={<ApplicationDetailPage />} />
@@ -45,15 +56,14 @@ export default function App() {
           </BrowserRouter>
           <Toaster
             position="top-right"
-            richColors
-            closeButton
             toastOptions={{
               className:
-                'font-sans !rounded-xl !border !border-zinc-200/80 !shadow-lg dark:!border-zinc-800',
+                'text-sm font-sans !rounded-xl !border !border-zinc-200/80 !bg-white !text-zinc-900 !shadow-lg dark:!border-zinc-800 dark:!bg-zinc-900 dark:!text-zinc-50',
+              duration: 4000,
             }}
           />
-        </ApplicationsProvider>
-      </AuthProvider>
-    </ThemeProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }
